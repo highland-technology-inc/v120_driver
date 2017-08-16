@@ -36,14 +36,6 @@
 #include <linux/sched.h>
 #include <linux/poll.h>
 
-#undef DEVICE_ATTR_RO
-# define DEVICE_ATTR_RO(name_) \
-        DEVICE_ATTR(name_, S_IRUGO, name_##_show, NULL)
-
-#undef DEVICE_ATTR_RW
-# define DEVICE_ATTR_RW(name_) \
-        DEVICE_ATTR(name_, (S_IWUSR | S_IRUGO), name_##_show, name_##_store)
-
 
 /* *********************************************************************
  *              Module local variables and parameters
