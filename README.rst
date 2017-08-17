@@ -18,11 +18,15 @@ The steps look something like the following (but be sure that "vmepci"
 is from us and not someone else before removing it -- check using
 "modinfo vmepci"):
 
+::
+
     $ sudo rmmod vmepci
     $ sudo rm -rf /lib/modules/`uname -r`/kernel/drivers/vmepci
     $ sudo rm /etc/udev/rules.d/10-vmepci.rules
 
-    Then edit /etc/modules and remove any occurence of the line
+Then edit /etc/modules and remove any occurence of the line
+
+::
 
     vmepci
 
@@ -31,6 +35,8 @@ Installing "v120" driver
 
 If this is the first time installing this driver on this computer,
 you should copy the rules file to /etc/udev/rules.d/
+
+::
 
     $ sudo cp 10-v120.rules /etc/udev/rules.d/
 
@@ -42,6 +48,8 @@ Installing with DKMS (recommended)
 
 Use the following commands to install with DKMS.  The 'version'
 target in this directory's Makefile will print the driver version.
+
+::
 
     $ sudo dkms add `pwd`       # or /path/to/driver/source/directory
     $ sudo dkms build v120/`make version`
@@ -64,45 +72,55 @@ the DKMS method discussed above.
 If you get a "/lib/modules...Makefile not found" error, you might not
 have kernel headers installed yet.  You can get them with
 
+::
+
     $ sudo apt-get linux-headers-`uname -r`
 
 To build this driver, enter the following command in the shell:
+
+::
 
     $ make
 
 To install the driver in a general sort of way, use:
 
+::
+
     $ sudo make install
 
 However, there is an environment variable to consider:
 
-    INSTALL_MOD_DIR
-        Suffix to /lib/modules/`uname -r`/ to install module.
+    * ``INSTALL_MOD_DIR``
+
+        Suffix to ``/lib/modules/\`uname -r\`/`` to install module.
 
         Linux, by default, sets this to "extra" for out-of-tree modules.
         Our makefile sets it to "kernel/drivers/v120".  This can be
         overwritten on the command line.
 
 There is yet another problem.  If this is a first install, and
-INSTALL_MOD_DIR is for a directory that does not yet exist, then the
+``INSTALL_MOD_DIR`` is for a directory that does not yet exist, then the
 kernel Makefile (as of 3.2.0-60) will only create the directory without
 adding the kernel object v120.ko.  This is solved by simply repeating the
 command:
+
+::
 
     $ sudo make install
     $ sudo make install
 
 Also, sometimes the kernel makefile will output something like
+``DEPMOD  v120.ko`` but the kernel will still not be able to find it.  If
+this happens, just do it manually:
 
-    DEPMOD  v120.ko
-
-but the kernel will still not be able to find it.  If this happens, just
-do it manually:
+::
 
     $ subo depmod -a
 
 On some systems, the module needs to be included in /etc/modules.  Do
 this by adding the line
+
+::
 
     v120
 
