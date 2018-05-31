@@ -35,6 +35,7 @@
 #include <linux/pci.h>
 #include <linux/sched.h>
 #include <linux/poll.h>
+#include <linux/version.h>
 
 
 /* *********************************************************************
@@ -51,6 +52,14 @@ static const struct pci_device_id v120_pci_ids[] = {
         { 0, }
 };
 MODULE_DEVICE_TABLE(pci, v120_pci_ids);
+
+/* Older kernel versions have different API for sysfs.
+ * Just don't use it on those.
+ */
+#define V120_USE_SYSFS  (LINUX_VERSION_CODE > KERNEL_VERSION(3, 11, 0))
+#if !V120_USE_SYSFS
+# warning We are not using SYSFS
+#endif
 
 /*
  * (Growing) table of character device names, major numbers, & other
@@ -462,6 +471,9 @@ static struct file_operations v120_c_fops = {
        .read           = v120_cv_read,
        .write          = v120_cv_write,
        .unlocked_ioctl = v120_c_ioctl,
+#if HAVE_COMPAT_IOCTL
+       .compat_ioctl   = v120_c_ioctl,
+#endif
        .llseek         = NULL,
        .mmap           = v120_cv_mmap,
 };
@@ -503,6 +515,9 @@ static struct file_operations v120_v_fops = {
        .read    = v120_cv_read,
        .write   = v120_cv_write,
        .unlocked_ioctl = v120_driver_dma_ioctl,
+#if HAVE_COMPAT_IOCTL
+       .compat_ioctl = v120_driver_dma_ioctl,
+#endif
        .llseek  = NULL,
        .mmap    = v120_cv_mmap,
 };
@@ -591,6 +606,8 @@ static void v120_q_exit(struct v120_dev_t *v120)
 /* *********************************************************************
  *                       Device attributes
  **********************************************************************/
+
+#if V120_USE_SYSFS
 
 /**
  * v120_isconnected - Make an educated guess whether or not device is
@@ -884,6 +901,7 @@ static DEVICE_ATTR_RO(dash);
 static DEVICE_ATTR_RW(dma);
 static DEVICE_ATTR_RW(nirq);
 
+#endif /* V120_USE_SYSFS */
 
 /* *********************************************************************
  *                  PCI Driver portion of the driver
@@ -1056,6 +1074,8 @@ static void v120_handle_revid(struct v120_dev_t *v120)
                    id, sep_vme ? 1 : 0, dma ? "" : "un");
 }
 
+#if V120_USE_SYSFS
+
 static struct device_attribute *const v120_dev_attrs[] = {
         &dev_attr_uled,
         &dev_attr_dips,
@@ -1088,6 +1108,14 @@ static void v120_sysfs_exit(struct device *dev)
                 device_remove_file(dev, v120_dev_attrs[i]);
         }
 }
+
+#else /* !V120_USE_SYSFS */
+
+static void v120_sysfs_init(struct device *dev) {}
+
+static void v120_sysfs_exit(struct device *dev) {}
+
+#endif /* !V120_USE_SYSFS */
 
 #define REG_IRQSTATUS(V120)   (((void *)(V120)->p_cfgregs) + 0x4400U)
 #define REG_PCIIRQ(V120)      (((void *)(V120)->p_cfgregs) + 0x440CU)
