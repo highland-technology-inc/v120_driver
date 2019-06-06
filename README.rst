@@ -66,7 +66,7 @@ Installing with Makefile
 Since this is an external loadable module (not a part of the kernel
 source tree), if you install directly with the Makefile you will need to
 reinstall with every kernel update.  For this reason, and because DKMS is
-more portable, the method discussed below is less preferrable than
+more portable, the method discussed below is less preferable than
 the DKMS method discussed above.
 
 If you get a "/lib/modules...Makefile not found" error, you might not
@@ -90,13 +90,13 @@ To install the driver in a general sort of way, use:
 
 However, there is an environment variable to consider:
 
-    * ``INSTALL_MOD_DIR``
+* ``INSTALL_MOD_DIR``
 
-        Suffix to ``/lib/modules/\`uname -r\`/`` to install module.
+  Suffix to ``/lib/modules/\`uname -r\`/`` to install module.
 
-        Linux, by default, sets this to "extra" for out-of-tree modules.
-        Our makefile sets it to "kernel/drivers/v120".  This can be
-        overwritten on the command line.
+  Linux, by default, sets this to "extra" for out-of-tree modules.
+  Our makefile sets it to "kernel/drivers/v120".  This can be
+  overwritten on the command line.
 
 There is yet another problem.  If this is a first install, and
 ``INSTALL_MOD_DIR`` is for a directory that does not yet exist, then the
