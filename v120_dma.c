@@ -23,6 +23,18 @@
 #include <linux/io.h>
 #include <linux/pci.h>
 #include <linux/sched.h>
+#include <linux/version.h>
+
+/* This is why I hate Linux */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
+# define v120_access_ok(t, a, s) access_ok(a, s)
+# undef VERIFY_WRITE
+# define VERIFY_WRITE 0
+# undef VERIFY_READ
+# define VERIFY_READ 0
+#else
+# define v120_access_ok(t, a, s) access_ok(t, a, s)
+#endif
 
 #if !HEAVY_DEBUG
 # define v120_debg_(...) do { (void)0; } while (0)
@@ -277,7 +289,7 @@ static int v120_dma_xfr_cluster(struct v120_dev_t *v120,
                         unsigned int verify_type;
 
                         /* Fetch new descriptor */
-                        if (!access_ok(VERIFY_READ,
+                        if (!v120_access_ok(VERIFY_READ,
                                        engine->uptr, sizeof(udesc))) {
                                 ret = -EFAULT;
                                 goto cleanup;
@@ -290,7 +302,7 @@ static int v120_dma_xfr_cluster(struct v120_dev_t *v120,
                          */
                         verify_type = v120_dma_iswrite(udesc.flags)
                                         ? VERIFY_READ : VERIFY_WRITE;
-                        if (!access_ok(verify_type,
+                        if (!v120_access_ok(verify_type,
                                        (void __user *)udesc.ptr,
                                        udesc.size)) {
                                 ret = -EFAULT;
@@ -422,7 +434,7 @@ static int v120_dma_xfr(struct v120_dev_t *v120, void __user *parg)
 static int v120_dma_status(struct v120_dev_t *v120, void __user *parg)
 {
         struct v120_dma_status_t status;
-        if (!access_ok(VERIFY_WRITE, parg, sizeof(status)))
+        if (!v120_access_ok(VERIFY_WRITE, parg, sizeof(status)))
                 return -EFAULT;
         v120_fill_dma_status(v120, &status);
         copy_to_user(parg, &status, sizeof(status));
