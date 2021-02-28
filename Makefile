@@ -9,6 +9,8 @@ export INSTALL_MOD_PATH
 
 endif
 
+CC += -Wno-unused-result
+
 v120_version := $(shell grep '^PACKAGE_VERSION' $(PWD)/dkms.conf | sed 's/^.*=//g')
 v120_version_sans = $(shell echo $(v120_version) | sed 's/\"//g')
 ccflags-y := -DDRV_VERSION=\"$(v120_version_sans)\"
