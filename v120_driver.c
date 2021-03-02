@@ -471,8 +471,10 @@ static struct file_operations v120_c_fops = {
        .read           = v120_cv_read,
        .write          = v120_cv_write,
        .unlocked_ioctl = v120_c_ioctl,
+#ifdef HAVE_COMPAT_IOCTL
 #if HAVE_COMPAT_IOCTL
        .compat_ioctl   = v120_c_ioctl,
+#endif
 #endif
        .llseek         = NULL,
        .mmap           = v120_cv_mmap,
@@ -515,8 +517,10 @@ static struct file_operations v120_v_fops = {
        .read    = v120_cv_read,
        .write   = v120_cv_write,
        .unlocked_ioctl = v120_driver_dma_ioctl,
+#ifdef HAVE_COMPAT_IOCTL
 #if HAVE_COMPAT_IOCTL
        .compat_ioctl = v120_driver_dma_ioctl,
+#endif
 #endif
        .llseek  = NULL,
        .mmap    = v120_cv_mmap,
@@ -1378,7 +1382,7 @@ static int v120_resume(struct pci_dev *pdev)
 }
 
 static pci_ers_result_t
-v120_error_detected(struct pci_dev *dev, enum pci_channel_state error)
+v120_error_detected(struct pci_dev *dev, pci_channel_state_t error)
 {
         char *serror;
         switch (error) {
@@ -1507,7 +1511,7 @@ static int __init v120_init(void)
 
         result = pci_register_driver(&v120_driver);
         if (result < 0) {
-                pr_warning("v120: Unable to register PCI driver\n");
+                pr_warn("v120: Unable to register PCI driver\n");
                 goto err_pcidrv;
         }
 
