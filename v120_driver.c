@@ -346,6 +346,14 @@ static int v120_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
 }
 #endif
 
+/* Note: RedHat backported these changes as far as kernel 5.14.0, so this
+ * check doesn't just automagically work.  Define CLASS_CREATE_SINGLE_ARG
+ * from the command line if necessary.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+  #define CLASS_CREATE_SINGLE_ARG
+#endif
+
 static int v120_cv_init(struct v120_dev_t *v120, unsigned int minor,
                         unsigned int chardev_enum,
                         const struct file_operations *filops)
@@ -367,7 +375,12 @@ static int v120_cv_init(struct v120_dev_t *v120, unsigned int minor,
         cdevno = MKDEV(V120_MAJOR(chardev_enum), minor);
         vc = &v120->p_chardev[chardev_enum];
 
-        vc->c_class = class_create(THIS_MODULE, cdevname);
+        #ifdef CLASS_CREATE_SINGLE_ARG
+                vc->c_class = class_create(cdevname);
+        #else
+                vc->c_class = class_create(THIS_MODULE, cdevname);
+        #endif
+
         if (IS_ERR(vc->c_class)) {
                 v120_debug(v120, "Failed to register device class %s\n",
                            cdevname);
