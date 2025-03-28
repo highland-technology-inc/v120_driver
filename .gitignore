@@ -2,6 +2,8 @@ dk.sh
 nonversion
 notes
 
+.vscode
+
 # Prerequisites
 *.d
 
