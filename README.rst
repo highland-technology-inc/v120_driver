@@ -87,7 +87,7 @@ have kernel headers installed yet.
 
 ::
     # Debian-derived systems
-    $ sudo apt-get linux-headers-`uname -r`
+    $ sudo apt-get install linux-headers-`uname -r`
     
     # RedHat-derived systems
     $ yum groupinstall kernel-devel-`uname -r`

@@ -13,8 +13,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, ubuntu-20.04, ubuntu-24.04-arm]
     steps:
+    - name: Update apt cache
+      run: sudo apt-get update
+    - name: Install kernel headers
+      run: sudo apt-get install -y linux-headers-$(uname -r)
     - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
     - name: make
       run: make
