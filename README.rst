@@ -43,6 +43,19 @@ you should copy the rules file to /etc/udev/rules.d/
 This gives read-write permissions to the device files at startup.
 Alternatively you can change the mode later.
 
+Notes for RedHat Systems
+------------------------
+
+RedHat chose to backport a syntax change to the create_class() function from
+the 6.4.0 kernel back to 5.14.0.  This affects v120_driver.c, which attempts
+to use the kernel version to derive the correct syntax, and on RedHat systems
+therefore fails.
+
+This can be fixed by setting the KCPPFLAGS environment variable prior to
+compilation::
+
+    $ export KCPPFLAGS=-DCLASS_CREATE_SINGLE_ARG
+
 Installing with DKMS (recommended)
 ----------------------------------
 
@@ -70,11 +83,14 @@ more portable, the method discussed below is less preferable than
 the DKMS method discussed above.
 
 If you get a "/lib/modules...Makefile not found" error, you might not
-have kernel headers installed yet.  You can get them with
+have kernel headers installed yet.
 
 ::
-
-    $ sudo apt-get linux-headers-`uname -r`
+    # Debian-derived systems
+    $ sudo apt-get install linux-headers-`uname -r`
+    
+    # RedHat-derived systems
+    $ yum groupinstall kernel-devel-`uname -r`
 
 To build this driver, enter the following command in the shell:
 
@@ -128,3 +144,4 @@ Now, if the V120 or V124 is powered on and its PCIe cable is properly
 connected to the PC, the driver should load at power-on.
 
 - Paul Bailey, June 2015
+- Updated Rob Gaddi, October 11 2024

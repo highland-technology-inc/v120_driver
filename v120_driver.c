@@ -20,6 +20,7 @@
  */
 
 #include "v120_struct.h"
+#include "kernel-versions.h"
 
 #include <linux/mm_types.h>
 #include <asm/pgtable.h>
@@ -53,10 +54,6 @@ static const struct pci_device_id v120_pci_ids[] = {
 };
 MODULE_DEVICE_TABLE(pci, v120_pci_ids);
 
-/* Older kernel versions have different API for sysfs.
- * Just don't use it on those.
- */
-#define V120_USE_SYSFS  (LINUX_VERSION_CODE > KERNEL_VERSION(3, 11, 0))
 #if !V120_USE_SYSFS
 # warning We are not using SYSFS
 #endif
@@ -131,6 +128,33 @@ static inline int v120_irq_ready(struct v120_dev_t *v120)
         return 1;
 }
 
+/* *********************************************************************
+ *        Kernel version compatibility nonsense
+ **********************************************************************/
+
+static inline struct class * v120_class_create(const char * cdevname)
+{
+    #ifdef CLASS_CREATE_SINGLE_ARG
+        return class_create(cdevname);
+    #else
+        return class_create(THIS_MODULE, cdevname);
+    #endif
+}
+
+#if !(VM_FLAGS_KERNEL_FUNCTION)
+
+static inline void vm_flags_set(struct vm_area_struct *vma, vm_flags_t flags)
+{
+    vma->vm_flags |= flags;
+}
+
+static inline void vm_flags_clear(struct vm_area_struct *vma, vm_flags_t flags)
+{
+    vma->vm_flags &= ~flags;
+}
+
+#endif 
+
 
 /* *********************************************************************
  *        Save/restore config for hotplug
@@ -171,7 +195,7 @@ static int v120_remap_pfn_range(struct vm_area_struct *vma,
                                 unsigned long phys)
 {
         vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-        vma->vm_flags |= VM_IO;
+        vm_flags_set(vma, VM_IO);
 
         return io_remap_pfn_range(vma, vma->vm_start, V120_PAGEOF(phys),
                                   v120_vsize(vma), vma->vm_page_prot);
@@ -366,8 +390,8 @@ static int v120_cv_init(struct v120_dev_t *v120, unsigned int minor,
 
         cdevno = MKDEV(V120_MAJOR(chardev_enum), minor);
         vc = &v120->p_chardev[chardev_enum];
+        vc->c_class = v120_class_create(cdevname);
 
-        vc->c_class = class_create(THIS_MODULE, cdevname);
         if (IS_ERR(vc->c_class)) {
                 v120_debug(v120, "Failed to register device class %s\n",
                            cdevname);

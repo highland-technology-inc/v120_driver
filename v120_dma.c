@@ -25,8 +25,10 @@
 #include <linux/sched.h>
 #include <linux/version.h>
 
+#include "kernel-versions.h"
+
 /* This is why I hate Linux */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
+#if TWO_ARG_ACCESS_OK
 # define v120_access_ok(t, a, s) access_ok(a, s)
 # undef VERIFY_WRITE
 # define VERIFY_WRITE 0

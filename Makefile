@@ -21,13 +21,13 @@ v120-objs := v120_driver.o v120_dma.o
 PWD ?= $(shell pwd)
 
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 install:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules_install
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules_install
 
 version:
 	@echo $(v120_version)
